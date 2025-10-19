@@ -14,7 +14,7 @@ func main() {
 	// - SPI device 0
 	// - 8 MHz speed
 	// - 8 LEDs
-	strip, err := ws2812b.NewStrip(1, 0, 8, 8)
+	strip, err := ws2812b.NewStrip(0, 0, 8, 8)
 	if err != nil {
 		log.Fatalf("Failed to create LED strip: %v", err)
 	}
