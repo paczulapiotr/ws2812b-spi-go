@@ -121,8 +121,9 @@ class WS2812B:
 		print("light in order")
 		a = 0
 		x = 23
+		reset_signal = [0x00] * 50  # 50 bytes of reset signal (~62.5µs at 6.4MHz)
 		while a < 8 :
-			self.spi.xfer(self.led_on[0:x:1])
+			self.spi.xfer(self.led_on[0:x:1] + reset_signal)  # Add reset after data
 			sleep(1)
 			x += 24
 			a += 1
