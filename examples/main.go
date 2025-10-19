@@ -10,11 +10,11 @@ import (
 
 func main() {
 	// Create a new LED strip with:
-	// - SPI bus 1
+	// - SPI bus 0
 	// - SPI device 0
 	// - 8 MHz speed
-	// - 8 LEDs
-	strip, err := ws2812b.NewStrip(0, 0, 8, 8)
+	// - 148 LEDs
+	strip, err := ws2812b.NewStrip(0, 0, 8, 148)
 	if err != nil {
 		log.Fatalf("Failed to create LED strip: %v", err)
 	}
@@ -22,27 +22,42 @@ func main() {
 
 	// Example 1: Turn on individual LEDs with different colors
 	fmt.Println("Example 1: Individual LED control")
-	if err := strip.SetLED(0, ws2812b.Color{R: 255, G: 0, B: 0}); err != nil {
+	if err := strip.SetLED(0, ws2812b.Color{R: 50, G: 0, B: 0}); err != nil {
 		log.Printf("Error setting LED 0: %v", err)
 	}
-	if err := strip.SetLED(2, ws2812b.Color{R: 0, G: 255, B: 0}); err != nil {
+	if err := strip.SetLED(1, ws2812b.Color{R: 255, G: 0, B: 0}); err != nil {
+		log.Printf("Error setting LED 1: %v", err)
+	}
+	if err := strip.SetLED(2, ws2812b.Color{R: 0, G: 50, B: 0}); err != nil {
 		log.Printf("Error setting LED 2: %v", err)
 	}
-	if err := strip.SetLED(4, ws2812b.Color{R: 0, G: 0, B: 255}); err != nil {
+	if err := strip.SetLED(3, ws2812b.Color{R: 0, G: 255, B: 0}); err != nil {
+		log.Printf("Error setting LED 3: %v", err)
+	}
+	if err := strip.SetLED(4, ws2812b.Color{R: 0, G: 0, B: 50}); err != nil {
 		log.Printf("Error setting LED 4: %v", err)
+	}
+	if err := strip.SetLED(5, ws2812b.Color{R: 0, G: 0, B: 255}); err != nil {
+		log.Printf("Error setting LED 5: %v", err)
 	}
 	time.Sleep(1 * time.Second)
 
 	// Example 2: Turn off specific LEDs
 	fmt.Println("Example 2: Turning off individual LEDs")
-	if err := strip.SetLED(0, ws2812b.Color{R: 0, G: 0, B: 0}); err != nil {
-		log.Printf("Error turning off LED 0: %v", err)
+	if err := strip.SetLED(1, ws2812b.Color{R: 0, G: 0, B: 0}); err != nil {
+		log.Printf("Error turning off LED 1: %v", err)
+	}
+	if err := strip.SetLED(3, ws2812b.Color{R: 0, G: 0, B: 0}); err != nil {
+		log.Printf("Error turning off LED 3: %v", err)
+	}
+	if err := strip.SetLED(5, ws2812b.Color{R: 0, G: 0, B: 0}); err != nil {
+		log.Printf("Error turning off LED 5: %v", err)
 	}
 	time.Sleep(1 * time.Second)
 
 	// Example 3: Set all LEDs at once
 	fmt.Println("Example 3: Set all LEDs")
-	if err := strip.SetAll(ws2812b.Color{R: 128, G: 0, B: 128}); err != nil {
+	if err := strip.SetAll(ws2812b.Color{R: 255, G: 0, B: 255}); err != nil {
 		log.Printf("Error setting all LEDs: %v", err)
 	}
 	time.Sleep(1 * time.Second)
@@ -56,14 +71,14 @@ func main() {
 
 	// Example 5: Fill a range
 	fmt.Println("Example 5: Fill range of LEDs")
-	if err := strip.Fill(2, 6, ws2812b.Color{R: 255, G: 165, B: 0}); err != nil {
+	if err := strip.Fill(0, 20, ws2812b.Color{R: 255, G: 0, B: 0}); err != nil {
 		log.Printf("Error filling range: %v", err)
 	}
 	time.Sleep(1 * time.Second)
 
 	// Example 6: Chase effect
 	fmt.Println("Example 6: Chase effect")
-	if err := strip.Chase(ws2812b.Color{R: 0, G: 255, B: 0}, 100*time.Millisecond, 3); err != nil {
+	if err := strip.Chase(ws2812b.Color{R: 0, G: 0, B: 255}, 100*time.Millisecond); err != nil {
 		log.Printf("Error running chase: %v", err)
 	}
 	time.Sleep(1 * time.Second)
@@ -89,13 +104,6 @@ func main() {
 	}
 	if err := strip.SetColors(colors); err != nil {
 		log.Printf("Error setting colors: %v", err)
-	}
-	time.Sleep(1 * time.Second)
-
-	// Example 9: Light LEDs in order (like Python example)
-	fmt.Println("Example 9: Light in order")
-	if err := strip.LightInOrder(100*time.Millisecond, 3); err != nil {
-		log.Printf("Error running light in order: %v", err)
 	}
 	time.Sleep(1 * time.Second)
 }

@@ -164,68 +164,18 @@ func (s *Strip) Fill(start, end int, color Color) error {
 	return s.writeBytes(data)
 }
 
-// LightInOrder lights up LEDs one by one in red, green, blue pattern
-// delay: time between each LED
-// loops: number of times to repeat the pattern
-func (s *Strip) LightInOrder(delay time.Duration, loops int) error {
-	fmt.Printf("Lighting %d LEDs in order\n", s.numLEDs)
-	
-	// Define color pattern: Red, Green, Blue repeating
-	colorPattern := []Color{
-		{R: 255, G: 0, B: 0},   // Red
-		{R: 0, G: 255, B: 0},   // Green
-		{R: 0, G: 0, B: 255},   // Blue
-	}
-	
-	for loop := 0; loop < loops; loop++ {
-		fmt.Printf("Loop %d/%d\n", loop+1, loops)
+// Chase creates a chase effect with the given color
+func (s *Strip) Chase(color Color, delay time.Duration) error {
+	for i := 0; i < s.numLEDs; i++ {
+		colors := make([]Color, s.numLEDs)
+		colors[i] = color
 		
-		// Light up LEDs one by one
-		for i := 0; i < s.numLEDs; i++ {
-			// Create list of colors for LEDs 0 to i
-			colors := make([]Color, i+1)
-			for j := 0; j <= i; j++ {
-				colors[j] = colorPattern[j%3]
-			}
-			
-			data := s.createLEDData(colors)
-			if err := s.writeBytes(data); err != nil {
-				return err
-			}
-			
-			if delay > 0 {
-				time.Sleep(delay)
-			}
-		}
-		
-		// Turn off all LEDs
-		fmt.Println("Turning off all LEDs")
-		if err := s.Clear(); err != nil {
+		if err := s.SetColors(colors); err != nil {
 			return err
 		}
 		
-		if loop < loops-1 {
-			time.Sleep(500 * time.Millisecond)
-		}
-	}
-	
-	return nil
-}
-
-// Chase creates a chase effect with the given color
-func (s *Strip) Chase(color Color, delay time.Duration, loops int) error {
-	for loop := 0; loop < loops; loop++ {
-		for i := 0; i < s.numLEDs; i++ {
-			colors := make([]Color, s.numLEDs)
-			colors[i] = color
-			
-			if err := s.SetColors(colors); err != nil {
-				return err
-			}
-			
-			if delay > 0 {
-				time.Sleep(delay)
-			}
+		if delay > 0 {
+			time.Sleep(delay)
 		}
 	}
 	return nil
