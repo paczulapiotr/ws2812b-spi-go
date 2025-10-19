@@ -46,15 +46,14 @@ func main() {
 
 	// Example 4: Chase effect
 	fmt.Println("Example 4: Chase effect")
-	if err := strip.Chase(ws2812b.Color{R: 0, G: 0, B: 255}, 100*time.Millisecond); err != nil {
+	if err := strip.Chase(ws2812b.Color{R: 0, G: 0, B: 255}, 20*time.Millisecond, 3*time.Second); err != nil {
 		log.Printf("Error running chase: %v", err)
 	}
-	time.Sleep(1 * time.Second)
 	strip.Clear()
 
 	// Example 5: Rainbow effect
 	fmt.Println("Example 5: Rainbow effect")
-	if err := strip.Rainbow(50*time.Millisecond, 2); err != nil {
+	if err := strip.Rainbow(50*time.Millisecond, 5*time.Second); err != nil {
 		log.Printf("Error running rainbow: %v", err)
 	}
 	time.Sleep(1 * time.Second)

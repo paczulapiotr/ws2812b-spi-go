@@ -1,6 +1,7 @@
 package ws2812b
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -151,27 +152,51 @@ func (s *Strip) Fill(start, end int, color Color) error {
 	return s.writeBytes(data)
 }
 
-// Chase creates a chase effect with the given color
-func (s *Strip) Chase(color Color, delay time.Duration) error {
-	for i := 0; i < s.numLEDs; i++ {
-		colors := make([]Color, s.numLEDs)
-		colors[i] = color
-		
-		if err := s.SetColors(colors); err != nil {
-			return err
-		}
-		
-		if delay > 0 {
-			time.Sleep(delay)
+// Chase creates a chase effect with the given color using context for cancellation
+// color: the color to chase
+// delay: time between each LED update
+// duration: total time to run the chase effect
+func (s *Strip) Chase(color Color, delay time.Duration, duration time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	defer cancel()
+	
+	ticker := time.NewTicker(delay)
+	defer ticker.Stop()
+	
+	position := 0
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
+			colors := make([]Color, s.numLEDs)
+			colors[position] = color
+			
+			if err := s.SetColors(colors); err != nil {
+				return err
+			}
+			
+			position = (position + 1) % s.numLEDs
 		}
 	}
-	return nil
 }
 
-// Rainbow creates a rainbow effect across the strip
-func (s *Strip) Rainbow(delay time.Duration, loops int) error {
-	for loop := 0; loop < loops; loop++ {
-		for hue := 0; hue < 360; hue += 5 {
+// Rainbow creates a rainbow effect across the strip using context for cancellation
+// delay: time between each color update
+// duration: total time to show the rainbow effect
+func (s *Strip) Rainbow(delay time.Duration, duration time.Duration) error {
+	ctx, cancel := context.WithTimeout(context.Background(), duration)
+	defer cancel()
+	
+	ticker := time.NewTicker(delay)
+	defer ticker.Stop()
+	
+	hue := 0
+	for {
+		select {
+		case <-ctx.Done():
+			return nil
+		case <-ticker.C:
 			colors := make([]Color, s.numLEDs)
 			for i := 0; i < s.numLEDs; i++ {
 				ledHue := (hue + (i * 360 / s.numLEDs)) % 360
@@ -182,12 +207,9 @@ func (s *Strip) Rainbow(delay time.Duration, loops int) error {
 				return err
 			}
 			
-			if delay > 0 {
-				time.Sleep(delay)
-			}
+			hue = (hue + 5) % 360
 		}
 	}
-	return nil
 }
 
 // hsvToRGB converts HSV color to RGB
