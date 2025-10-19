@@ -29,7 +29,7 @@ class WS2812B:
 		self.spi = spidev.SpiDev()
 		#bus , device
 		self.spi.open(bus, device)
-		self.spi.max_speed_hz = speed * 1000000
+		self.spi.max_speed_hz = int(speed * 1000000)  # Convert to integer
 		self.spi.mode = 0b0  # Changed from 0b1 to 0b0 for Rock 5B
 		self.spi.xfer([0x00])
 
