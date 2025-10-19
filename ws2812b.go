@@ -102,19 +102,6 @@ func (s *Strip) createLEDData(colors []Color) []byte {
 	return data
 }
 
-// SetLED sets a single LED to a specific color
-func (s *Strip) SetLED(index int, color Color) error {
-	if index < 0 || index >= s.numLEDs {
-		return fmt.Errorf("LED index %d out of range [0, %d)", index, s.numLEDs)
-	}
-	
-	colors := make([]Color, index+1)
-	colors[index] = color
-	
-	data := s.createLEDData(colors)
-	return s.writeBytes(data)
-}
-
 // SetAll sets all LEDs to the same color
 func (s *Strip) SetAll(color Color) error {
 	colors := make([]Color, s.numLEDs)
