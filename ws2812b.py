@@ -133,6 +133,6 @@ class WS2812B:
 		self.spi.xfer(self.led_off)
 
 if __name__ == "__main__" :
-	led = WS2812B(0, 0, 8)
+	led = WS2812B(0, 0, 6.4)  # Changed from 8 MHz to 6.4 MHz for better WS2812B timing
 	led.light_in_order()
 	led.all_led_off()
