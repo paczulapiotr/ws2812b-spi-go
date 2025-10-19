@@ -68,7 +68,7 @@ class WS2812B:
 if __name__ == "__main__":
 	led = WS2812B(bus=0, device=0, speed=8, num_leds=148)
 	try:
-		led.light_in_order(delay=0.01, loops=3)  # 10ms delay, 3 loops
+		led.light_in_order(delay=0.002, loops=3)  # 10ms delay, 3 loops
 	finally:
 		led.close()
 
