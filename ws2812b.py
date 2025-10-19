@@ -29,8 +29,8 @@ class WS2812B:
 		self.spi = spidev.SpiDev()
 		#bus , device
 		self.spi.open(bus, device)
-		self.spi.max_speed_hz = int(speed * 1000000)  # Convert to integer
-		self.spi.mode = 0b0  # Changed from 0b1 to 0b0 for Rock 5B
+		self.spi.max_speed_hz = int(speed * 1000000)
+		self.spi.mode = 0b0  # Mode 0 for Rock 5B
 		self.spi.xfer([0x00])
 
 		self.led_off = [
@@ -120,10 +120,9 @@ class WS2812B:
 	def light_in_order(self):
 		print("light in order")
 		a = 0
-		x = 24  # Changed from 23 to 24 - each LED needs exactly 24 bytes
-		reset_signal = [0x00] * 50  # 50 bytes of reset signal (~62.5µs at 6.4MHz)
+		x = 24  # Fixed: each LED needs exactly 24 bytes
 		while a < 8 :
-			self.spi.xfer(self.led_on[0:x:1] + reset_signal)  # Add reset after data
+			self.spi.xfer(self.led_on[0:x:1])
 			sleep(1)
 			x += 24
 			a += 1
@@ -134,6 +133,6 @@ class WS2812B:
 		self.spi.xfer(self.led_off)
 
 if __name__ == "__main__" :
-	led = WS2812B(0, 0, 6.4)  # Changed from 8 MHz to 6.4 MHz for better WS2812B timing
+	led = WS2812B(0, 0, 8)  # 8 MHz works fine
 	led.light_in_order()
 	led.all_led_off()
