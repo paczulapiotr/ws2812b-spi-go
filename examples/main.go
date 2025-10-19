@@ -42,18 +42,18 @@ func main() {
 	}
 	time.Sleep(1 * time.Second)
 
-	// Example 2: Turn off specific LEDs
-	fmt.Println("Example 2: Turning off individual LEDs")
-	if err := strip.SetLED(1, ws2812b.Color{R: 0, G: 0, B: 0}); err != nil {
-		log.Printf("Error turning off LED 1: %v", err)
-	}
-	if err := strip.SetLED(3, ws2812b.Color{R: 0, G: 0, B: 0}); err != nil {
-		log.Printf("Error turning off LED 3: %v", err)
-	}
-	if err := strip.SetLED(5, ws2812b.Color{R: 0, G: 0, B: 0}); err != nil {
-		log.Printf("Error turning off LED 5: %v", err)
-	}
-	time.Sleep(1 * time.Second)
+	// // Example 2: Turn off specific LEDs
+	// fmt.Println("Example 2: Turning off individual LEDs")
+	// if err := strip.SetLED(1, ws2812b.Color{R: 0, G: 0, B: 0}); err != nil {
+	// 	log.Printf("Error turning off LED 1: %v", err)
+	// }
+	// if err := strip.SetLED(3, ws2812b.Color{R: 0, G: 0, B: 0}); err != nil {
+	// 	log.Printf("Error turning off LED 3: %v", err)
+	// }
+	// if err := strip.SetLED(5, ws2812b.Color{R: 0, G: 0, B: 0}); err != nil {
+	// 	log.Printf("Error turning off LED 5: %v", err)
+	// }
+	// time.Sleep(1 * time.Second)
 
 	// Example 3: Set all LEDs at once
 	fmt.Println("Example 3: Set all LEDs")
