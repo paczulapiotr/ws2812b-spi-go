@@ -10,7 +10,7 @@ import (
 
 func main() {
 	// Initialize LED strip (SPI bus 1, device 0, 8MHz, 144 LEDs)
-	strip, err := ws2812b.NewStrip(1, 0, 8, 144)
+	strip, err := ws2812b.NewStrip(0, 0, 8, 144)
 	if err != nil {
 		log.Fatalf("Failed to initialize LED strip: %v", err)
 	}
