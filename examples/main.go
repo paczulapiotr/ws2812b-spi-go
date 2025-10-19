@@ -22,46 +22,80 @@ func main() {
 
 	// Example 1: Turn on individual LEDs with different colors
 	fmt.Println("Example 1: Individual LED control")
-	/// ... implementation
+	if err := strip.SetLED(0, ws2812b.Color{R: 255, G: 0, B: 0}); err != nil {
+		log.Printf("Error setting LED 0: %v", err)
+	}
+	if err := strip.SetLED(2, ws2812b.Color{R: 0, G: 255, B: 0}); err != nil {
+		log.Printf("Error setting LED 2: %v", err)
+	}
+	if err := strip.SetLED(4, ws2812b.Color{R: 0, G: 0, B: 255}); err != nil {
+		log.Printf("Error setting LED 4: %v", err)
+	}
 	time.Sleep(1 * time.Second)
 
 	// Example 2: Turn off specific LEDs
 	fmt.Println("Example 2: Turning off individual LEDs")
-	/// ... implementation
+	if err := strip.SetLED(0, ws2812b.Color{R: 0, G: 0, B: 0}); err != nil {
+		log.Printf("Error turning off LED 0: %v", err)
+	}
 	time.Sleep(1 * time.Second)
 
 	// Example 3: Set all LEDs at once
 	fmt.Println("Example 3: Set all LEDs")
-	/// ... implementation
+	if err := strip.SetAll(ws2812b.Color{R: 128, G: 0, B: 128}); err != nil {
+		log.Printf("Error setting all LEDs: %v", err)
+	}
 	time.Sleep(1 * time.Second)
 
 	// Example 4: Clear all LEDs
 	fmt.Println("Example 4: Clear all LEDs")
-	/// ... implementation
+	if err := strip.Clear(); err != nil {
+		log.Printf("Error clearing LEDs: %v", err)
+	}
 	time.Sleep(1 * time.Second)
 
 	// Example 5: Fill a range
 	fmt.Println("Example 5: Fill range of LEDs")
-	/// ... implementation
+	if err := strip.Fill(2, 6, ws2812b.Color{R: 255, G: 165, B: 0}); err != nil {
+		log.Printf("Error filling range: %v", err)
+	}
 	time.Sleep(1 * time.Second)
 
 	// Example 6: Chase effect
 	fmt.Println("Example 6: Chase effect")
-	/// ... implementation
+	if err := strip.Chase(ws2812b.Color{R: 0, G: 255, B: 0}, 100*time.Millisecond, 3); err != nil {
+		log.Printf("Error running chase: %v", err)
+	}
 	time.Sleep(1 * time.Second)
 
 	// Example 7: Rainbow effect
 	fmt.Println("Example 7: Rainbow effect")
-	/// ... implementation
+	if err := strip.Rainbow(50*time.Millisecond, 2); err != nil {
+		log.Printf("Error running rainbow: %v", err)
+	}
 	time.Sleep(1 * time.Second)
 
 	// Example 8: Manual control with batch update
 	fmt.Println("Example 8: Manual batch control")
-	/// ... implementation
+	colors := []ws2812b.Color{
+		{R: 255, G: 0, B: 0},     // Red
+		{R: 255, G: 127, B: 0},   // Orange
+		{R: 255, G: 255, B: 0},   // Yellow
+		{R: 0, G: 255, B: 0},     // Green
+		{R: 0, G: 0, B: 255},     // Blue
+		{R: 75, G: 0, B: 130},    // Indigo
+		{R: 148, G: 0, B: 211},   // Violet
+		{R: 255, G: 255, B: 255}, // White
+	}
+	if err := strip.SetColors(colors); err != nil {
+		log.Printf("Error setting colors: %v", err)
+	}
 	time.Sleep(1 * time.Second)
 
 	// Example 9: Light LEDs in order (like Python example)
 	fmt.Println("Example 9: Light in order")
-	/// ... implementation
+	if err := strip.LightInOrder(100*time.Millisecond, 3); err != nil {
+		log.Printf("Error running light in order: %v", err)
+	}
 	time.Sleep(1 * time.Second)
 }

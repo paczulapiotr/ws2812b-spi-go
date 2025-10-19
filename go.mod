@@ -2,4 +2,7 @@ module github.com/paczulapiotr/ws2812b-spi-go
 
 go 1.19
 
-require golang.org/x/exp v0.0.0-20231006140011-7918f672742d
+require (
+	periph.io/x/conn/v3 v3.7.2
+	periph.io/x/host/v3 v3.8.2
+)
