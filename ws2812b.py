@@ -30,7 +30,7 @@ class WS2812B:
 		#bus , device
 		self.spi.open(bus, device)
 		self.spi.max_speed_hz = speed * 1000000
-		self.spi.mode = 0b1
+		self.spi.mode = 0b0  # Changed from 0b1 to 0b0 for Rock 5B
 		self.spi.xfer([0x00])
 
 		self.led_off = [
