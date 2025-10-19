@@ -66,7 +66,7 @@ class WS2812B:
 		self.spi.close()
 
 if __name__ == "__main__":
-	led = WS2812B(bus=0, device=0, speed=8, num_leds=144)
+	led = WS2812B(bus=0, device=0, speed=8, num_leds=148)
 	try:
 		led.light_in_order(delay=0.01, loops=3)  # 10ms delay, 3 loops
 	finally:
