@@ -120,7 +120,7 @@ class WS2812B:
 	def light_in_order(self):
 		print("light in order")
 		a = 0
-		x = 23
+		x = 24  # Changed from 23 to 24 - each LED needs exactly 24 bytes
 		reset_signal = [0x00] * 50  # 50 bytes of reset signal (~62.5µs at 6.4MHz)
 		while a < 8 :
 			self.spi.xfer(self.led_on[0:x:1] + reset_signal)  # Add reset after data
