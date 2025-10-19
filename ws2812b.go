@@ -39,25 +39,26 @@ type Strip struct {
 // NewStrip creates a new WS2812B LED strip controller
 // bus: SPI bus number (e.g., 0 or 1)
 // device: SPI device number (usually 0)
-// speedMHz: SPI speed in MHz (ignored, uses 6.4 MHz for WS2812B timing)
+// speedMHz: SPI speed in MHz (recommended: 8)
 // numLEDs: number of LEDs in the strip
 func NewStrip(bus, device, speedMHz, numLEDs int) (*Strip, error) {
-	// WS2812B requires 6.4 MHz SPI speed for proper timing
-	// This gives us 156.25ns per bit which works for WS2812B protocol
 	dev, err := spi.Open(&spi.Devfs{
 		Dev:      fmt.Sprintf("/dev/spidev%d.%d", bus, device),
-		Mode:     spi.Mode0,
-		MaxSpeed: 6400000, // 6.4 MHz
+		Mode:     spi.Mode0, // Mode 0 for Radxa Rock 5B
+		MaxSpeed: int64(speedMHz * 1000000),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open SPI device: %w", err)
 	}
 
+	// Send initialization byte
+	dev.Tx([]byte{0x00}, nil)
+
 	strip := &Strip{
 		device:   dev,
 		numLEDs:  numLEDs,
 		leds:     make([]Color, numLEDs),
-		spiSpeed: 6400000,
+		spiSpeed: speedMHz * 1000000,
 	}
 
 	// Initialize all LEDs to off
@@ -123,46 +124,32 @@ func (s *Strip) Show() error {
 	if err := s.device.Tx(data, nil); err != nil {
 		return fmt.Errorf("failed to send data to LED strip: %w", err)
 	}
-	// Add a small delay for the reset period (>50µs)
-	time.Sleep(100 * time.Microsecond)
 	return nil
 }
 
 // encode converts the LED color values to SPI data
-// WS2812B protocol requires specific timing:
-// - Bit 1: 0.8µs high, 0.45µs low (total 1.25µs)
-// - Bit 0: 0.4µs high, 0.85µs low (total 1.25µs)
-// At 6.4 MHz SPI, each bit is 156.25ns
-// So we encode each WS2812B bit as 8 SPI bits (~1.25µs)
+// This uses the proven encoding from the working Python implementation
 // WS2812B uses GRB color order (Green, Red, Blue)
+// 0x80 = bit 0, 0xF8 = bit 1
 func (s *Strip) encode() []byte {
-	// Reset signal: at least 50µs of low (we'll use ~100µs)
-	// At 6.4MHz, that's about 640 bits, so 80 bytes
-	resetBytes := 80
+	// Each LED needs 24 bytes (8 bytes per color channel * 3 channels)
+	data := make([]byte, s.numLEDs*24)
 	
-	// Each LED color bit becomes 8 SPI bits
-	// 24 color bits per LED * 8 SPI bits = 192 SPI bits = 24 bytes per LED
-	bytesPerLED := 24
-	totalBytes := resetBytes + (s.numLEDs * bytesPerLED) + resetBytes
-	
-	data := make([]byte, totalBytes)
-	
-	// Start after reset bytes
-	offset := resetBytes
-
+	offset := 0
 	for _, led := range s.leds {
 		// WS2812B expects GRB order
 		colors := []uint8{led.G, led.R, led.B}
 		
 		for _, colorByte := range colors {
+			// Convert each color byte to 8 SPI bytes
 			// Process each bit from MSB to LSB
 			for bit := 7; bit >= 0; bit-- {
 				if (colorByte & (1 << bit)) != 0 {
-					// Bit is 1: 110000 pattern (5 highs, 3 lows) = 0b11111000 = 0xF8
+					// Bit is 1
 					data[offset] = 0xF8
 				} else {
-					// Bit is 0: 100000 pattern (2 highs, 6 lows) = 0b11000000 = 0xC0
-					data[offset] = 0xC0
+					// Bit is 0
+					data[offset] = 0x80
 				}
 				offset++
 			}
