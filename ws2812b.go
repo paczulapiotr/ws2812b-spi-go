@@ -2,17 +2,9 @@ package ws2812b
 
 import (
 	"fmt"
-	"sync"
 	"time"
 
 	"golang.org/x/exp/io/spi"
-)
-
-const (
-	spiSpeedHz  = 6400000 // 6.4 MHz for more reliable WS2812B timing
-	resetBytes  = 300     // At least 300 for 144 LEDs
-	bitsPerByte = 8
-	bytesPerLED = 24 * 3 // 24 bits per LED * 3 SPI bytes per bit
 )
 
 // Color represents an RGB color value
@@ -38,41 +30,39 @@ var (
 
 // Strip represents a WS2812B LED strip
 type Strip struct {
-	device  *spi.Device
-	numLEDs int
-	leds    []Color
-	buffer  []byte
-	mutex   sync.Mutex
+	device   *spi.Device
+	numLEDs  int
+	leds     []Color
+	spiSpeed int
 }
 
 // NewStrip creates a new WS2812B LED strip controller
 // bus: SPI bus number (e.g., 0 or 1)
 // device: SPI device number (usually 0)
-// speedMHz: SPI speed in MHz (ignored, uses 6.4 MHz)
+// speedMHz: SPI speed in MHz (typically 8)
 // numLEDs: number of LEDs in the strip
 func NewStrip(bus, device, speedMHz, numLEDs int) (*Strip, error) {
 	dev, err := spi.Open(&spi.Devfs{
 		Dev:      fmt.Sprintf("/dev/spidev%d.%d", bus, device),
-		Mode:     spi.Mode0,
-		MaxSpeed: int64(spiSpeedHz),
+		Mode:     spi.Mode1,
+		MaxSpeed: int64(speedMHz * 1000000),
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to open SPI device: %w", err)
 	}
 
-	// Calculate buffer size: reset + LED data + reset
-	bufferSize := resetBytes + (numLEDs * bytesPerLED) + resetBytes
-
 	strip := &Strip{
-		device:  dev,
-		numLEDs: numLEDs,
-		leds:    make([]Color, numLEDs),
-		buffer:  make([]byte, bufferSize),
+		device:   dev,
+		numLEDs:  numLEDs,
+		leds:     make([]Color, numLEDs),
+		spiSpeed: speedMHz,
 	}
 
-	// Initialize all LEDs to off
-	strip.Clear()
-	strip.Show()
+	// Initialize with reset signal
+	if err := strip.device.Tx([]byte{0x00}, nil); err != nil {
+		dev.Close()
+		return nil, fmt.Errorf("failed to initialize SPI: %w", err)
+	}
 
 	return strip, nil
 }
@@ -129,45 +119,46 @@ func (s *Strip) Clear() {
 
 // Show updates the LED strip with the current color values
 func (s *Strip) Show() error {
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	// Clear buffer with reset bytes
-	for i := 0; i < len(s.buffer); i++ {
-		s.buffer[i] = 0x00
-	}
-
-	// Start after first reset bytes
-	offset := resetBytes
-
-	for ledIndex := 0; ledIndex < s.numLEDs; ledIndex++ {
-		led := s.leds[ledIndex]
-		// WS2812B expects GRB order
-		colors := []uint8{led.G, led.R, led.B}
-
-		for _, colorByte := range colors {
-			for bit := 7; bit >= 0; bit-- {
-				if (colorByte & (1 << bit)) != 0 {
-					// Bit is 1: ~0.8µs high, ~0.45µs low
-					s.buffer[offset] = 0b11100000
-					s.buffer[offset+1] = 0b00000000
-					s.buffer[offset+2] = 0b00000000
-				} else {
-					// Bit is 0: ~0.4µs high, ~0.85µs low
-					s.buffer[offset] = 0b10000000
-					s.buffer[offset+1] = 0b00000000
-					s.buffer[offset+2] = 0b00000000
-				}
-				offset += 3
-			}
-		}
-	}
-
-	// Write to SPI
-	if err := s.device.Tx(s.buffer, nil); err != nil {
+	data := s.encode()
+	if err := s.device.Tx(data, nil); err != nil {
 		return fmt.Errorf("failed to send data to LED strip: %w", err)
 	}
 	return nil
+}
+
+// encode converts the LED color values to SPI data
+// WS2812B uses GRB color order (not RGB)
+// Each bit is encoded as: 0x80 for 0, 0xf8 for 1
+func (s *Strip) encode() []byte {
+	// Each LED needs 24 bytes (8 bytes per color channel * 3 channels)
+	data := make([]byte, s.numLEDs*24)
+
+	for i, led := range s.leds {
+		offset := i * 24
+
+		// Green (first 8 bytes)
+		encodeByte(led.G, data[offset:offset+8])
+
+		// Red (next 8 bytes)
+		encodeByte(led.R, data[offset+8:offset+16])
+
+		// Blue (last 8 bytes)
+		encodeByte(led.B, data[offset+16:offset+24])
+	}
+
+	return data
+}
+
+// encodeByte converts a single byte value to 8 SPI bytes
+func encodeByte(value uint8, dest []byte) {
+	for i := 0; i < 8; i++ {
+		// Check bit from MSB to LSB
+		if (value & (0x80 >> i)) != 0 {
+			dest[i] = 0xf8 // bit is 1
+		} else {
+			dest[i] = 0x80 // bit is 0
+		}
+	}
 }
 
 // Rainbow creates a rainbow effect across the strip
