@@ -5,7 +5,7 @@ import (
 	"log"
 	"time"
 
-	"github.com/radxa/sample_code/go-ws2812b"
+	"github.com/paczulapiotr/ws2812b-spi-go"
 )
 
 func main() {
